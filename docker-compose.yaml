@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-db
+    restart: always
+    env_file:
+      - ./services/auth-service/.env
+    networks:
+      - helping-hands_default
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  auth-service:
+    build: ./services/auth-service
+    container_name: auth-service
+    restart: always
+    depends_on:
+      - postgres
+    env_file:
+      - ./services/auth-service/.env
+    networks:
+      - helping-hands_default
+    ports:
+      - "3000:3000"
+  
+  campaign-service:
+    build: ./services/campaign-service
+    container_name: campaign-service
+    restart: always
+    depends_on:
+      - postgres
+    env_file:
+      - ./services/campaign-service/.env
+    networks:
+      - helping-hands_default
+    ports:
+      - "4000:4000"
+  donation-service:
+    build: ./services/donation-service
+    container_name: donation-service
+    restart: always
+    depends_on:
+      - postgres
+    env_file:
+      - ./services/donation-service/.env
+    networks:
+      - helping-hands_default
+    ports:
+      - "5000:5000"
+      
+networks:
+  helping-hands_default:
+    driver: bridge
+    
+volumes:
+  postgres_data:
+
