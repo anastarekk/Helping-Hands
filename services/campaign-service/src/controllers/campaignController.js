@@ -6,7 +6,7 @@ const create = async (req, res) => {
     const campaign = await createCampaign(
         title,
         description,
-        req.user.userId
+        req.user.id
     );
 
     if (items && items.length > 0) {

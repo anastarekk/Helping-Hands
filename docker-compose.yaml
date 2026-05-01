@@ -49,8 +49,33 @@ services:
     networks:
       - helping-hands_default
     ports:
+      - "5002:5002"
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    restart: always
+    depends_on:
+      - auth-service
+      - campaign-service
+      - donation-service
+    env_file:
+      - ./api-gateway/.env
+    networks:
+      - helping-hands_default
+    ports:
       - "5000:5000"
       
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    restart: always
+    depends_on:
+      - api-gateway
+    networks:
+      - helping-hands_default
+    ports:
+      - "9000:9000"
 networks:
   helping-hands_default:
     driver: bridge

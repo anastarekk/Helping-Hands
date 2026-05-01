@@ -1,4 +1,4 @@
-const { createDonation, addItems, getDonations, updateStatus } = require('../models/donationModel');
+const { createDonation, addItems, getDonations, updateStatus, getDonatedItemsForCampaign } = require('../models/donationModel');
 const axios = require('axios');
 
 const CAMPAIGN_SERVICE_URL = process.env.CAMPAIGN_SERVICE_URL || 'http://campaign-service:4000';
@@ -8,7 +8,6 @@ const create = async (req, res) => {
     if (!items || items.length === 0) {
         return res.status(400).json({ message: 'items are required' });
     }
-
 
     let campaign;
     try {
@@ -24,15 +23,22 @@ const create = async (req, res) => {
         return res.status(500).json({ message: 'Failed to verify campaign', error: err.message });
     }
 
+    const donatedSoFar = await getDonatedItemsForCampaign(campaign_id);
+    const donatedMap = {};
+    donatedSoFar.forEach(row => { donatedMap[row.item_name] = parseInt(row.total_donated); });
 
     for (const donatedItem of items) {
         const requiredItem = campaign.items.find(i => i.name === donatedItem.name);
         if (!requiredItem) {
             return res.status(400).json({ message: `Item "${donatedItem.name}" is not needed by this campaign` });
         }
-        if (donatedItem.quantity > requiredItem.quantity) {
+        
+        const alreadyDonated = donatedMap[donatedItem.name] || 0;
+        const remaining = requiredItem.quantity - alreadyDonated;
+
+        if (donatedItem.quantity > remaining) {
             return res.status(400).json({
-                message: `Quantity for "${donatedItem.name}" exceeds needed amount (needed: ${requiredItem.quantity}, donated: ${donatedItem.quantity})`
+                message: `Quantity for "${donatedItem.name}" exceeds needed amount (needed: ${requiredItem.quantity}, already donated: ${alreadyDonated}, remaining: ${remaining}, you tried to donate: ${donatedItem.quantity})`
             });
         }
     }

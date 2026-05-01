@@ -22,4 +22,15 @@ const updateStatus = async (Id, status) => {
     return result.rows[0];
 };
 
-module.exports = { createDonation, addItems, getDonations, updateStatus };
+const getDonatedItemsForCampaign = async (campaign_id) => {
+    const result = await pool.query(`
+        SELECT di.item_name, SUM(di.quantity) as total_donated
+        FROM donations_items di
+        JOIN donations d ON di.donation_id = d.id
+        WHERE d.campaign_id = $1
+        GROUP BY di.item_name
+    `, [campaign_id]);
+    return result.rows;
+};
+
+module.exports = { createDonation, addItems, getDonations, updateStatus, getDonatedItemsForCampaign };
