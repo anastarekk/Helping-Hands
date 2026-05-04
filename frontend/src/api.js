@@ -1,4 +1,4 @@
-const BASE = "http://localhost:5000";
+const BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
 const getHeaders = () => ({
     "Content-Type": "application/json",
     Authorization: `Bearer ${localStorage.getItem("token")}`

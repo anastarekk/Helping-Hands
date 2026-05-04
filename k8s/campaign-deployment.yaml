@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: campaign-service
+  namespace: helping-hands
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: campaign-service
+  template:
+    metadata:
+      labels:
+        app: campaign-service
+    spec:
+      containers:
+        - name: campaign-service
+          image: anastarek/campaign-service
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4000
+          envFrom:
+            - configMapRef:
+                name: campaign-config
